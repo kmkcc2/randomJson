@@ -9,4 +9,4 @@ import lombok.*;
 public class RandomGeoPosition {
     private double latitude;
     private double longitude;
-   }
+}

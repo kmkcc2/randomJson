@@ -25,5 +25,4 @@ public class RandomObject {
     private String countryCode;
     private boolean coreCountry;
     private Double distance;
-
 }
