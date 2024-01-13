@@ -17,7 +17,7 @@ public class RandomObjectController {
     @GetMapping("/{size}")
     public List<RandomObject> getRandomObjects(@PathVariable int size) {
         Faker faker = new Faker();
-        List randomObjectList = new ArrayList();
+        List<RandomObject> randomObjectList = new ArrayList();
         for(int i = 0; i < size; i++) {
             RandomObject ro = new RandomObject(
                     faker.pokemon().name(),
