@@ -3,11 +3,15 @@ package com.example.randomJsonToCsv.generateCsv;
 import jakarta.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/csv")
@@ -16,9 +20,12 @@ public class GenerateCsvController {
     GenerateCsvService generateCsvService;
 
     @GetMapping("/")
-    public void getCsv(HttpServletResponse response) throws IOException {
-        response.setContentType("text/csv; charset=utf-8");
-        List<String> listOfJsons = generateCsvService.getListOfJsons(5);
+    public ResponseEntity getCsv(@RequestParam(required = false) Optional<Integer> size) throws IOException {
+        int listSize = size.orElse(5);
+        List<String> listOfJsons = generateCsvService.getListOfJsons(listSize);
+        if (listOfJsons == null){
+            return ResponseEntity.internalServerError().contentType(MediaType.valueOf("text/plain")).body("External server failure");
+        }
         String header = "type,_id,name,type,latitude,longitude";
         StringBuilder data = new StringBuilder();
         JSONObject jsonObject = new JSONObject(listOfJsons);
@@ -34,12 +41,16 @@ public class GenerateCsvController {
             if(i < listOfJsons.size()) data.append("\n");
         }
         header += "\n";
-        response.getWriter().print(header+data);
+        return ResponseEntity.ok().contentType(MediaType.valueOf("text/csv")).body(header+data);
     }
 
     @GetMapping("/specific/")
-    public void getSpecyficCsv(HttpServletResponse response, @RequestParam String headers) throws IOException {
-        List<String> listOfJsons = generateCsvService.getListOfJsons(5);
+    public ResponseEntity getSpecyficCsv(@RequestParam String headers, @RequestParam(required = false) Optional<Integer> size) throws IOException {
+        int listSize = size.orElse(5);
+        List<String> listOfJsons = generateCsvService.getListOfJsons(listSize);
+        if (listOfJsons == null){
+            return ResponseEntity.internalServerError().contentType(MediaType.valueOf("text/plain")).body("External server failure");
+        }
         List<String> columns = Arrays.asList(headers.split(",")).stream().map(String::trim).toList();
         StringBuilder header = new StringBuilder();
         columns.stream().forEach(e -> header.append(e + ","));
@@ -59,16 +70,11 @@ public class GenerateCsvController {
                     data.append(json.getJSONObject("geo_position").get(nextColumn));
                     if (iter.hasNext()) data.append(",");
                 } else {
-                    response.setStatus(400);
+                    return ResponseEntity.badRequest().contentType(MediaType.valueOf("text/plain")).body("Invalid columns specified");
                 }
             }
             if(i < listOfJsons.size()) data.append("\n");
         }
-        response.setContentType("text/csv; charset=utf-8");
-        if (response.getStatus() == 400) {
-            response.getWriter().print("Invalid columns specified");
-        }else{
-            response.getWriter().print(header.toString()+data);
-        }
+        return ResponseEntity.ok().contentType(MediaType.valueOf("text/csv")).body(header.toString()+data);
     }
 }

@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,9 +23,11 @@ public class GenerateCsvService {
         final String uri = "http://localhost:8080/generate/json/"+size;
 
         RestTemplate restTemplate = new RestTemplate();
-        String result = restTemplate.getForObject(uri, String.class);
-        List<String> resultList = new ArrayList<>();
-        try {
+        String result;
+        try{
+            result = restTemplate.getForObject(uri, String.class);
+            List<String> resultList = new ArrayList<>();
+
             ObjectMapper objectMapper = new ObjectMapper();
             JsonFactory factory = objectMapper.getFactory();
             JsonParser parser = factory.createParser(result);
@@ -37,10 +41,10 @@ public class GenerateCsvService {
                     resultList.add(element.toString());
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            return resultList;
+        } catch (ResourceAccessException | IOException e) {
+            return null;
         }
 
-        return resultList;
     }
 }
