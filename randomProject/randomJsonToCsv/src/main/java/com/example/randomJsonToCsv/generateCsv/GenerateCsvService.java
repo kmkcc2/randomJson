@@ -20,7 +20,7 @@ public class GenerateCsvService {
 
     public List<String> getListOfJsons(int size)
     {
-        final String uri = "http://localhost:8080/generate/json/"+size;
+        final String uri = "http://randomjson:8080/generate/json/"+size;
 
         RestTemplate restTemplate = new RestTemplate();
         String result;

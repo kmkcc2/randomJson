@@ -1,0 +1,21 @@
+services:
+  randomjson:
+    container_name: randomjson
+    build:
+      context: ./randomJson/
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    restart: always
+  randomjsontocsv:
+    container_name: randomjsontocsv
+    stdin_open: true
+    tty: true
+    build:
+      context: ./randomJsonToCsv/
+      dockerfile: Dockerfile
+    ports:
+      - 8081:8081
+    depends_on:
+      - randomjson
+    restart: always
